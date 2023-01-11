@@ -1,9 +1,6 @@
 import time
 import ccxt
 import requests
-import pandas as pd
-import numpy as np
-from tenacity import *
 from testConfig import *
 from logSet import *
 
@@ -119,27 +116,3 @@ def getKlines(exchangeId, level, amount, symbols):
 
     return klines
 
-
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(SLEEP_SHORT), reraise=True,
-        before_sleep=before_sleep_log(logger, logging.ERROR))
-def placeOrder(exchange, markets, symbol, _type, side, price, amount):
-    symbolId = markets[symbol]["id"]
-    price = exchange.priceToPrecision(symbol, price)
-    amount = exchange.amountToPrecision(symbol, amount)
-    
-    body = {
-        "currency_pair": symbolId,
-        "type": _type,
-        "side": side,
-        "price": price,
-        "amount": amount,
-    }
-
-    try:
-        order = exchange.postOrders(body)
-        orderId = order["id"]
-        return orderId
-    except Exception as e:
-        logger.error(f"下买单失败，继续下一挂单：{e} price:{price} amount:{amount}")
-        logger.exception(e)
-        return 0

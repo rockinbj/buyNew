@@ -41,7 +41,7 @@ def main():
     orderIdsBuy = []
     orderIdsSell = []
 
-    logger.info("准备就绪，等待开始……")
+    logger.info(f"{symbol}抢新准备就绪，等待开始……")
     while True:
         if time.time() >= tradingTime:
             logger.info("时间到！开始下单！")
@@ -67,10 +67,22 @@ def main():
             time.sleep(SLEEP_MEDIUM)
             for id in orderIdsBuy:
                 if id:
-                    orderInfo = ex.fetchOrder(id, symbol)
+                    for i in range(TRY_TIMES):
+                        try:
+                            orderInfo = ex.fetchOrder(id, symbol)
+                            break
+                        except Exception as e:
+                            logger.error(f"{symbol}获取订单信息失败，重试{e}")
+                            logger.exception(e)
+                            if i==TRY_TIMES-1:
+                                logger.error(f"{symbol}获取订单信息多次失败，无法完成后续平仓，请手动平仓。")
+                                raise
+                            time.sleep(SLEEP_MEDIUM)
+                            continue
+
                     if orderInfo["status"] == "closed":
                         price = orderInfo["average"]
-                        amount = orderInfo["filled"]
+                        amount = orderInfo["filled"] - orderInfo["fee"]["cost"]
                         logger.info(f"买入成功！！！{symbol} price:{price} amount:{amount}")
                     else:
                         logger.info(f"买入订单状态未成交{symbol} price:{price} amount:{amount} : {orderInfo['status']}") 

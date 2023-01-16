@@ -1,4 +1,5 @@
 import time
+import datetime as dt
 import math
 import ccxt
 from functions import *
@@ -41,7 +42,7 @@ def main():
     orderIdsBuy = []
     orderIdsSell = []
 
-    logger.info(f"{symbol}抢新准备就绪，等待开始……")
+    logger.info(f"{symbol}抢新准备就绪，等待开始，开始时间{dt.datetime.fromtimestamp(tradingTime).strftime('%Y-%m-%d %H:%M:%S')}")
     while True:
         if time.time() >= tradingTime:
             logger.info("时间到！开始下单！")

@@ -49,7 +49,9 @@ def main():
 
             for bp in buyParas:
                 price = bp[0]
+                price = ex.priceToPrecision(symbol, price)
                 amount = bp[1]
+                amount = ex.amountToPrecision(symbol, amount)
 
                 for i in range(TRY_TIMES):
                     try:

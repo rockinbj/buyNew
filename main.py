@@ -27,6 +27,7 @@ sellParas = [
 ]
 
 def main():
+    logger.info(f"当前交易所：{EXCHANGE} 当前币种：{symbol}")
     ex = getattr(ccxt, EXCHANGE)(EXCHANGE_CONFIG)
 
     mkts = ex.loadMarkets()
@@ -43,7 +44,7 @@ def main():
     orderIdsBuy = []
     orderIdsSell = []
 
-    logger.info(f"{symbol}抢新准备就绪，等待开始，开始时间{dt.datetime.fromtimestamp(tradingTime).strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"{symbol}抢新准备就绪，等待开始时间{dt.datetime.fromtimestamp(tradingTime).strftime('%Y-%m-%d %H:%M:%S')}")
     while True:
         if time.time() >= tradingTime:
             logger.info("时间到！开始下单！")

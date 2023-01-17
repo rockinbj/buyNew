@@ -16,7 +16,7 @@ buyParas = [
     # [price, amountCoins]
     # 定义多个买入策略，在哪个价格挂单买入多少个币
     # [70, 0.7],
-    [0.1, 200],
+    [0.01, 600],
 ]
 
 sellParas = [
@@ -32,6 +32,7 @@ def main():
     mkts = ex.loadMarkets()
     tks = ex.fetchTicker(symbol)
     mkt = mkts[symbol]
+
 
     symbolId = mkt["id"]
     precisionAmount = mkt["precision"]["amount"]
@@ -119,6 +120,14 @@ def main():
     logger.info("任务结束")
 
 if __name__ == "__main__":
-    start = time.time()
-    main()
-    logger.info(f"用时{round(time.time()-start,2)}s")
+    
+    while True:
+        try:
+            start = time.time()
+            main()
+            logger.info(f"用时{round(time.time()-start,2)}s")
+        except ccxt.BadSymbol as e:
+            logger.info(f"{symbol}交易对未开启,继续等待")
+            time.sleep(SLEEP_MEDIUM)
+            continue
+    

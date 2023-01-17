@@ -7,23 +7,23 @@ from exchangeConfig import *
 from logSet import *
 
 
-symbol = "AMKT/USDT"
-tradingTime = 1673532000
-# symbol = "SHIB/USDT"
+symbol = "CORE/USDT"
+tradingTime = 1673935200
+# symbol = "DOGE/USDT"
 # tradingTime = int(time.time()) + 10
 
 buyParas = [
     # [price, amountCoins]
     # 定义多个买入策略，在哪个价格挂单买入多少个币
-    [70, 0.7],
-    # [0.01, 2000],
+    # [70, 0.7],
+    [0.1, 200],
 ]
 
 sellParas = [
     # [times, amountU]
-    # 定义多个卖出策略，在成交价多少倍数挂单卖出多少U
-    # [2, 0.7],
-    [2, 0.7],
+    # 定义多个卖出策略，在成交价多少倍数挂单卖出
+    # 2,
+    2,
 ]
 
 def main():
@@ -94,7 +94,7 @@ def main():
                     for sp in sellParas:
                         tk = ex.fetchTicker(symbol)
                         priceBuy1 = tk["bid"]
-                        price *= sp[0]
+                        price *= sp
                         # amount *= priceBuy1
                         # price = ex.priceToPrecision(symbol, price)
                         # amount = max(amount, minAmount)

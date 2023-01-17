@@ -7,10 +7,10 @@ from exchangeConfig import *
 from logSet import *
 
 
-symbol = "CORE/USDT"
-tradingTime = 1673935200
-# symbol = "DOGE/USDT"
-# tradingTime = int(time.time()) + 10
+# symbol = "CORE/USDT"
+# tradingTime = 1673935200
+symbol = "DOGE/USDT"
+tradingTime = int(time.time()) + 10
 
 buyParas = [
     # [price, amountCoins]
@@ -75,7 +75,16 @@ def main():
                     for i in range(TRY_TIMES):
                         try:
                             orderInfo = ex.fetchOrder(id, symbol)
-                            break
+
+                            if orderInfo["status"] == "closed":
+                                price = orderInfo["average"]
+                                amount = orderInfo["filled"] - orderInfo["fee"]["cost"]
+                                logger.info(f"买入成功！！！{symbol} price:{price} amount:{amount}")
+                            else:
+                                logger.info(f"买入订单状态未成交{symbol} price:{price} amount:{amount} : {orderInfo['status']} 过1s重试")
+                                time.sleep(SLEEP_LONG)
+                                continue
+
                         except Exception as e:
                             logger.error(f"{symbol}获取订单信息失败，重试{e}")
                             logger.exception(e)
@@ -85,14 +94,6 @@ def main():
                             time.sleep(SLEEP_MEDIUM)
                             continue
 
-                    if orderInfo["status"] == "closed":
-                        price = orderInfo["average"]
-                        amount = orderInfo["filled"] - orderInfo["fee"]["cost"]
-                        logger.info(f"买入成功！！！{symbol} price:{price} amount:{amount}")
-                    else:
-                        logger.info(f"买入订单状态未成交{symbol} price:{price} amount:{amount} : {orderInfo['status']}") 
-                        continue
-                    
                     for sp in sellParas:
                         tk = ex.fetchTicker(symbol)
                         priceBuy1 = tk["bid"]
@@ -119,6 +120,7 @@ def main():
         time.sleep(0.005)
 
     logger.info("任务结束")
+    exit()
 
 if __name__ == "__main__":
     

@@ -27,7 +27,7 @@ sellParas = [
 ]
 
 def main():
-    logger.info(f"当前交易所：{EXCHANGE} 当前币种：{symbol}")
+    logger.info(f"\n\n\n当前交易所：{EXCHANGE} 当前币种：{symbol}")
     ex = getattr(ccxt, EXCHANGE)(EXCHANGE_CONFIG)
 
     mkts = ex.loadMarkets()

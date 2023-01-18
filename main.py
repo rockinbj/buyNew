@@ -52,7 +52,7 @@ def main():
             for bp in buyParas:
                 price = bp[0]
                 price = ex.priceToPrecision(symbol, price)
-                amount = bp[1]
+                amount = max(bp[1], minAmount)
                 amount = ex.amountToPrecision(symbol, amount)
 
                 for i in range(TRY_TIMES):
@@ -80,6 +80,7 @@ def main():
                                 price = orderInfo["average"]
                                 amount = orderInfo["filled"] - orderInfo["fee"]["cost"]
                                 logger.info(f"买入成功！！！{symbol} price:{price} amount:{amount}")
+                                break
                             else:
                                 logger.info(f"买入订单状态未成交{symbol} price:{price} amount:{amount} : {orderInfo['status']} 过1s重试")
                                 time.sleep(SLEEP_LONG)

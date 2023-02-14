@@ -147,5 +147,6 @@ if __name__ == "__main__":
             logger.info(f"用时{round(time.time() - start, 2)}s")
         except ccxt.BadSymbol as e:
             logger.info(f"{symbol}交易对未开启,继续等待")
+            logger.exception(e)
             time.sleep(SLEEP_MEDIUM)
             continue

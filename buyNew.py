@@ -150,3 +150,7 @@ if __name__ == "__main__":
             logger.exception(e)
             time.sleep(SLEEP_MEDIUM)
             continue
+        except Exception as e:
+            logger.error(f"主程序报错: {e}")
+            logger.exception(e)
+            continue

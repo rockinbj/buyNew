@@ -1,4 +1,5 @@
 import math
+import time
 
 from exchangeConfig import *
 from functions import *
@@ -14,14 +15,15 @@ buyParas = [
     # [price, amountCoins]
     # 定义多个买入策略，在哪个价格挂单买入多少个币
     # [70, 0.7],
-    [0.1, 30],
+    [0.1, 200],
 ]
 
 sellParas = [
     # [times, amountU]
-    # 定义多个卖出策略，在成交价多少倍数挂单卖出
-    # 2,
-    2,
+    # 定义多个卖出策略，[在成交价多少倍数挂单卖出, 挂单百分比]
+    # [2, 0.5], 以买入价2倍挂卖单，挂买入数量50%的币
+    [2, 0.5],
+    [5, 0.5],
 ]
 
 
@@ -54,12 +56,15 @@ def main():
                 price = ex.priceToPrecision(symbol, price)
                 amount = max(bp[1], minAmount)
                 amount = ex.amountToPrecision(symbol, amount)
+                logger.debug(f"买单要求: price-{price} amount-{amount}")
 
                 for i in range(TRY_TIMES):
                     try:
                         order = ex.createOrder(symbol, type="limit", side="buy", price=price, amount=amount)
                         orderId = order["id"]
-                        logger.debug(f"{symbol}买入订单已提交，orderId: {orderId} price:{price} amount:{amount}")
+                        orderPrice = order["price"]
+                        orderAmount = order["amount"]
+                        logger.debug(f"{symbol}买入订单已提交，orderId: {orderId} price:{orderPrice} amount:{orderAmount}")
                         orderIdsBuy.append(orderId)
                         break
                     except Exception as e:
@@ -97,26 +102,33 @@ def main():
                             time.sleep(SLEEP_MEDIUM)
                             continue
 
-                    for sp in sellParas:
+                    for orderInfo in sellParas:
+                        logger.debug(f"卖单要求: {orderInfo}")
+                        times = orderInfo[0]
+                        pct = orderInfo[1]
                         tk = ex.fetchTicker(symbol)
-                        priceBuy1 = tk["bid"]
-                        price *= sp
+                        priceThisTime = price * times
+                        amountThisTime = amount * pct
                         # amount *= priceBuy1
                         # price = ex.priceToPrecision(symbol, price)
                         # amount = max(amount, minAmount)
-                        if minCost and amount * price < minCost:
-                            amount = math.ceil(minCost / price)
-
+                        if minCost and amountThisTime * priceThisTime < minCost:
+                            amountThisTime = math.ceil(minCost / priceThisTime)
+                        logger.debug(f"卖单参数: times-{times} pct-{pct} priceThisTime-{priceThisTime} amountThisTime-{amountThisTime}")
                         for i in range(TRY_TIMES):
                             try:
-                                order = ex.createOrder(symbol, type="limit", side="sell", price=price, amount=amount)
-                                logger.debug(f"{symbol}卖出订单已提交，orderId: {orderId} price:{price} amount:{amount}")
+                                order = ex.createOrder(symbol, type="limit", side="sell", price=priceThisTime, amount=amountThisTime)
+                                orderId = order["id"]
+                                orderPrice = order["price"]
+                                orderAmount = order["amount"]
+                                logger.debug(f"{symbol}卖出订单已提交，orderId: {orderId} price:{orderPrice} amount:{orderAmount}")
                                 orderIdsSell.append(order["id"])
                                 break
                             except Exception as e:
-                                logger.error(f"提交卖单报错{symbol} {price} {amount}: {e}")
+                                logger.error(f"提交卖单报错{symbol} {priceThisTime} {amountThisTime}: {e}")
                                 logger.exception(e)
                                 if i == TRY_TIMES - 1: raise RuntimeError(f"下卖单失败次数过多，退出。")
+                                time.sleep(0.002)
                                 continue
 
             break

@@ -117,7 +117,7 @@ def main():
                         for i in range(TRY_TIMES):
                             try:
                                 order = ex.createOrder(symbol, type="limit", side="sell", price=priceThisTime, amount=amountThisTime)
-                                print(order)
+                                # print(order)
                                 orderId = order["id"]
                                 orderPrice = order["price"]
                                 orderAmount = order["amount"]

@@ -6,24 +6,25 @@ from functions import *
 from logSet import *
 
 
-# symbol = "CORE/USDT"
-# tradingTime = 1673935200
 symbol = "BLUR/USDT"
-tradingTime = int(time.time()) + 10
+tradingTime = 1676399399
+# symbol = "BLUR/USDT"
+# tradingTime = int(time.time()) + 10
 
 buyParas = [
     # [price, amountCoins]
     # 定义多个买入策略，在哪个价格挂单买入多少个币
     # [70, 0.7],
-    [0.1, 200],
+    [0.2, 15000],
 ]
 
 sellParas = [
     # [times, amountU]
     # 定义多个卖出策略，[在成交价多少倍数挂单卖出, 挂单百分比]
     # [2, 0.5], 以买入价2倍挂卖单，挂买入数量50%的币
-    [2, 0.5],
-    [5, 0.5],
+    [4, 0.5],
+    [6, 0.3],
+    [9, 0.2],
 ]
 
 

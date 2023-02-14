@@ -62,9 +62,7 @@ def main():
                     try:
                         order = ex.createOrder(symbol, type="limit", side="buy", price=price, amount=amount)
                         orderId = order["id"]
-                        orderPrice = order["price"]
-                        orderAmount = order["amount"]
-                        logger.debug(f"{symbol}买入订单已提交，orderId: {orderId} price:{orderPrice} amount:{orderAmount}")
+                        logger.debug(f"{symbol}买入订单已提交，orderId: {orderId} price:{price} amount:{amount}")
                         orderIdsBuy.append(orderId)
                         break
                     except Exception as e:
@@ -84,7 +82,8 @@ def main():
                             if orderInfo["status"] == "closed":
                                 price = orderInfo["average"]
                                 amount = orderInfo["filled"] - orderInfo["fee"]["cost"]
-                                logger.info(f"买入成功！！！{symbol} price:{price} amount:{amount}")
+                                logger.info(f"√√√ 买入成功 {symbol} √√√   "
+                                            f"实际成交参数: price:{price} amount:{amount}")
                                 break
                             else:
                                 logger.info(
@@ -118,6 +117,7 @@ def main():
                         for i in range(TRY_TIMES):
                             try:
                                 order = ex.createOrder(symbol, type="limit", side="sell", price=priceThisTime, amount=amountThisTime)
+                                print(order)
                                 orderId = order["id"]
                                 orderPrice = order["price"]
                                 orderAmount = order["amount"]

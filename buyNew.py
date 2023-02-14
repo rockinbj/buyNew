@@ -8,7 +8,7 @@ from logSet import *
 
 # symbol = "CORE/USDT"
 # tradingTime = 1673935200
-symbol = "DOGE/USDT"
+symbol = "BLUR/USDT"
 tradingTime = int(time.time()) + 10
 
 buyParas = [
@@ -32,7 +32,7 @@ def main():
     ex = getattr(ccxt, EXCHANGE)(EXCHANGE_CONFIG)
 
     mkts = ex.loadMarkets()
-    tks = ex.fetchTicker(symbol)
+    # tks = ex.fetchTicker(symbol)
     mkt = mkts[symbol]
 
     symbolId = mkt["id"]

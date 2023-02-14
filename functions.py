@@ -1,10 +1,17 @@
 import time
 import ccxt
 import requests
+import numpy as np
+import pandas as pd
 from testConfig import *
+from exchangeConfig import *
 from logSet import *
 
+RULE = "USDT"
+MARKET = "spot"
+MIN_SPOT_COST = 1.0
 logger = logging.getLogger("app.func")
+
 
 def testfun(msg):
     logger.info(msg)
@@ -23,6 +30,11 @@ def sendMixin(msg, _type="PLAIN_TEXT"):
     if r["success"] is False:
         logger.warning(f"Mixin failure: {r.text}")
 
+
+def sendAndRaise(msg):
+    logger.error(msg)
+    sendMixin(msg)
+    raise RuntimeError(msg)
 
 def getReport(df):
     _df = df.copy()
@@ -116,3 +128,85 @@ def getKlines(exchangeId, level, amount, symbols):
 
     return klines
 
+def getPositions(exchange):
+    # swap positions:
+    # info    id  contracts  contractSize  unrealizedPnl  leverage liquidationPrice  collateral  notional markPrice  entryPrice timestamp  initialMargin  initialMarginPercentage  maintenanceMargin  maintenanceMarginPercentage marginRatio datetime marginMode marginType  side  hedged percentage
+    # spot positions:
+    # free
+    try:
+        if MARKET == "swap":
+            p = exchange.fetchPositions()
+            p = pd.DataFrame(p)
+            p.set_index("symbol", inplace=True)
+            p.index.name = None
+            return p
+        elif MARKET == "spot":
+            p = exchange.fetchBalance()["free"]
+            p = pd.DataFrame.from_dict(p, orient="index", columns=["free"])
+            return p
+    except Exception as e:
+        logger.exception(e)
+        sendAndRaise(f"{STRATEGY_NAME}: getPositions()错误, 程序退出。{e}")
+
+
+def getOpenPosition(exchange):
+    pos = getPositions(exchange)
+
+    if MARKET == "swap":
+        op = pos.loc[pos["contracts"] != 0]
+        op = op.astype(
+            {
+                "contracts": float,
+                "unrealizedPnl": float,
+                "leverage": float,
+                "liquidationPrice": float,
+                "collateral": float,
+                "notional": float,
+                "markPrice": float,
+                "entryPrice": float,
+                "marginType": str,
+                "side": str,
+                "percentage": float,
+                "timestamp": float,
+            }
+        )
+        op = op[["contracts", "notional", "percentage", "unrealizedPnl", "leverage", "entryPrice", "markPrice",
+                 "liquidationPrice", "datetime", "side", "marginType", "timestamp"]]
+        return op
+
+    elif MARKET == "spot":
+        quote = ["USDT", "BUSD", "USDC"]
+        op = pos.loc[(pos["free"] != 0) & ~pos.index.isin(quote)]
+        if not op.empty:
+            op = op.rename(index=lambda s: f"{s}/{RULE}")
+            for s,row in op.iterrows():
+                op.loc[s, "price"] = exchange.fetchTicker(s)["last"]
+                op.loc[s, "cost"] = op.loc[s, "price"] * op.loc[s, "free"]
+            op = op[op["cost"] > MIN_SPOT_COST]
+        return op
+
+
+def getBalance(exchange, asset="usdt"):
+    symbol = asset.upper()
+    b = exchange.fetchBalance()[symbol]
+    # b = {'free': 18.89125761, 'used': 27.08454256, 'total': 45.97736273}
+    return b
+
+
+def closePositionForce(exchange, markets, openPostions, symbol=None):
+    # 如果没有symbol参数, 清空所有持仓, 如果有symbol只平仓指定币种
+    for s, pos in openPostions.iterrows():
+        if symbol is not None and s != symbol: continue
+        symbolId = markets[s]["id"]
+        para = {
+            "symbol": symbolId,
+            "side": "SELL",
+            "type": "MARKET",
+            "quantity": pos["contracts"],
+            "reduceOnly": True,
+        }
+        try:
+            exchange.fapiPrivatePostOrder(para)
+        except Exception as e:
+            logger.error(f"closePositionForce({s})强制平仓出错: {e}")
+            logger.exception(e)

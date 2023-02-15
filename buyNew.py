@@ -6,7 +6,7 @@ from logSet import *
 
 # symbol = "wAXL/USDT"
 # tradingTime = 1676455199
-symbol = "T/USDT"
+symbol = "BLUR/USDT"
 tradingTime = int(time.time()) + 7
 
 buyParas = [
@@ -20,8 +20,8 @@ sellParas = [
     # [times, amountU]
     # 定义多个卖出策略，[在成交价多少倍数挂单卖出, 挂单百分比]
     # [2, 0.5], 以买入价2倍挂卖单，挂买入数量50%的币
-    [1.5, 0.7],
-    [3, 0.3],
+    [1.5, 1],
+    # [3, 0.3],
 ]
 
 
@@ -73,11 +73,11 @@ def main():
                         break
                     except ccxt.InsufficientFunds as e:
                         logger.error(f"余额不足，停止 {e}")
-                        logger.exception(e)
+                        # logger.exception(e)
                         raise RuntimeError("余额不足，停止")
                     except Exception as e:
                         logger.error(f"提交买单报错{symbol} {price} {amount}: {e}")
-                        logger.exception(e)
+                        # logger.exception(e)
                         if i == TRY_TIMES - 1: raise RuntimeError(f"下买单失败次数过多，退出。")
                         continue
 
@@ -116,7 +116,7 @@ def main():
                             continue
                         except Exception as e:
                             logger.error(f"{symbol}获取订单信息失败，重试{e}")
-                            logger.exception(e)
+                            # logger.exception(e)
                             if i == TRY_TIMES - 1:
                                 logger.error(f"{symbol} 查询买入结果失败，无法挂卖出单，请手动挂单")
                                 raise
@@ -152,7 +152,7 @@ def main():
 
                             except Exception as e:
                                 logger.error(f"提交卖单报错{symbol} {priceThisTime} {amountThisTime}: {e}")
-                                logger.exception(e)
+                                # logger.exception(e)
                                 if i == TRY_TIMES - 1: raise RuntimeError(f"下卖单失败次数过多，退出。")
                                 time.sleep(0.002)
                                 continue
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             logger.info(f"用时{round(time.time() - start, 2)}s")
         except ccxt.BadSymbol as e:
             logger.info(f"{symbol}交易对未开启,继续等待")
-            logger.exception(e)
+            # logger.exception(e)
             time.sleep(SLEEP_MEDIUM)
             continue
         except RuntimeError as e:

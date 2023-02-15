@@ -29,6 +29,8 @@ def main():
     logger.info(f"\n\n\n当前交易所：{EXCHANGE} 当前币种：{symbol}")
     if EXCHANGE == "mexc":
         logger.warning(f"!!!注意 MEXC 交易所对API只开放 指定交易对，请检查 {symbol} 是否在列!!!")
+    elif EXCHANGE == "kucoin":
+        logger.warning(f"KUCOIN 交易所的API地址白名单有bug，记得交易完重新开启API地址买名单")
     ex = getattr(ccxt, EXCHANGE)(EXCHANGE_CONFIG)
 
     mkts = ex.loadMarkets()

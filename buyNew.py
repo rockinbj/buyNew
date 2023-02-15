@@ -6,14 +6,14 @@ from logSet import *
 
 # symbol = "wAXL/USDT"
 # tradingTime = 1676455199
-symbol = "DOGE/USDT"
-tradingTime = int(time.time()) + 5
+symbol = "T/USDT"
+tradingTime = int(time.time()) + 7
 
 buyParas = [
     # [price, amountCoins]
     # 定义多个买入策略，在哪个价格挂单买入多少个币
     # [70, 0.7],
-    [0.15, 200],
+    [0.1, 100],
 ]
 
 sellParas = [
@@ -27,6 +27,8 @@ sellParas = [
 
 def main():
     logger.info(f"\n\n\n当前交易所：{EXCHANGE} 当前币种：{symbol}")
+    if EXCHANGE == "mexc":
+        logger.warning(f"!!!注意 MEXC 交易所对API只开放 指定交易对，请检查 {symbol} 是否在列!!!")
     ex = getattr(ccxt, EXCHANGE)(EXCHANGE_CONFIG)
 
     mkts = ex.loadMarkets()
@@ -37,7 +39,7 @@ def main():
     precisionAmount = mkt["precision"]["amount"]
     minAmount = mkt["limits"]["amount"]["min"]
     minCost = mkt["limits"]["cost"]["min"]
-    logger.debug(f"{symbolId} precisionAmount:{precisionAmount} minAmount:{minAmount} minCost:{minCost}")
+    logger.debug(f"symbol-{symbol} symbolId-{symbolId} precisionAmount-{precisionAmount} minAmount-{minAmount} minCost-{minCost}")
     logger.debug(f"币种信息：{mkt}")
 
     orderIdsBuy = []
@@ -52,15 +54,17 @@ def main():
             for bp in buyParas:
                 price = bp[0]
                 price = ex.priceToPrecision(symbol, price)
-                amount = max(bp[1], minAmount)
+                amount = bp[1]
+                if minAmount:
+                    amount = max(bp[1], minAmount)
                 amount = ex.amountToPrecision(symbol, amount)
-                logger.debug(f"买单要求: price-{price} amount-{amount}")
+                logger.info(f"买单要求: symbol-{symbol} price-{price} amount-{amount}")
 
                 for i in range(TRY_TIMES):
                     try:
                         order = ex.createOrder(symbol, type="limit", side="buy", price=price, amount=amount)
                         orderId = order["id"]
-                        logger.debug(f"{symbol}买入订单已提交，orderId: {orderId} price:{price} amount:{amount}")
+                        logger.info(f"{symbol}买入订单已提交, orderId: {orderId} price:{price} amount:{amount}")
                         orderIdsBuy.append(orderId)
                         break
                     except ccxt.InsufficientFunds as e:
@@ -73,19 +77,21 @@ def main():
                         if i == TRY_TIMES - 1: raise RuntimeError(f"下买单失败次数过多，退出。")
                         continue
 
-            logger.debug(f"orderBuyList: {orderIdsBuy}")
+            logger.debug(f"已发送的订单列表: orderBuyList-{orderIdsBuy}")
             time.sleep(SLEEP_MEDIUM)
             for id in orderIdsBuy:
                 if id:
                     for i in range(TRY_TIMES):
                         try:
                             orderInfo = ex.fetchOrder(id, symbol)
-
+                            logger.debug(f"查询到订单信息: {orderInfo}")
                             if orderInfo["status"] == "closed":
+                                logger.info(f"√√√ 买入成功 {symbol} √√√   ")
                                 price = orderInfo["average"]
-                                amount = orderInfo["filled"] - orderInfo["fee"]["cost"]
-                                logger.info(f"√√√ 买入成功 {symbol} √√√   "
-                                            f"实际成交参数: price:{price} amount:{amount}")
+                                amount = orderInfo["filled"]
+                                if orderInfo["fee"]:
+                                    amount = orderInfo["filled"] - orderInfo["fee"]["cost"]
+                                logger.info(f"实际成交参数: price:{price} amount:{amount}")
                                 break
                             else:
                                 logger.info(
@@ -121,9 +127,7 @@ def main():
                                 order = ex.createOrder(symbol, type="limit", side="sell", price=priceThisTime, amount=amountThisTime)
                                 # print(order)
                                 orderId = order["id"]
-                                orderPrice = order["price"]
-                                orderAmount = order["amount"]
-                                logger.debug(f"{symbol}卖出订单已提交，orderId: {orderId} price:{orderPrice} amount:{orderAmount}")
+                                logger.debug(f"{symbol}卖出挂单已提交，orderId: {orderId}")
                                 orderIdsSell.append(order["id"])
                                 break
                             except Exception as e:
@@ -132,6 +136,15 @@ def main():
                                 if i == TRY_TIMES - 1: raise RuntimeError(f"下卖单失败次数过多，退出。")
                                 time.sleep(0.002)
                                 continue
+
+                        # 查询卖出挂单状态
+                        for soid in orderIdsSell:
+                            time.sleep(SLEEP_LONG)
+
+                            r = ex.fetchOrder(soid, symbol)
+                            logger.info(f"已挂卖单信息: symbol={r['symbol']} status={r['status']} price={r['price']} amount={r['amount']} "
+                                        f"fees={r['fees']} orderType={r['type']} side={r['side']}")
+
 
             break
         time.sleep(0.005)

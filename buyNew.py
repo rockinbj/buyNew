@@ -1,30 +1,27 @@
 import math
-import time
 
-from exchangeConfig import *
 from functions import *
 from logSet import *
 
 
-symbol = "BLUR/USDT"
-tradingTime = 1676399399
-# symbol = "BLUR/USDT"
-# tradingTime = int(time.time()) + 10
+# symbol = "wAXL/USDT"
+# tradingTime = 1676455199
+symbol = "DOGE/USDT"
+tradingTime = int(time.time()) + 5
 
 buyParas = [
     # [price, amountCoins]
     # 定义多个买入策略，在哪个价格挂单买入多少个币
     # [70, 0.7],
-    [0.2, 15000],
+    [0.15, 200],
 ]
 
 sellParas = [
     # [times, amountU]
     # 定义多个卖出策略，[在成交价多少倍数挂单卖出, 挂单百分比]
     # [2, 0.5], 以买入价2倍挂卖单，挂买入数量50%的币
-    [4, 0.5],
-    [6, 0.3],
-    [9, 0.2],
+    [1.5, 0.7],
+    [3, 0.3],
 ]
 
 
@@ -66,6 +63,10 @@ def main():
                         logger.debug(f"{symbol}买入订单已提交，orderId: {orderId} price:{price} amount:{amount}")
                         orderIdsBuy.append(orderId)
                         break
+                    except ccxt.InsufficientFunds as e:
+                        logger.error(f"余额不足，停止 {e}")
+                        logger.exception(e)
+                        raise RuntimeError("余额不足，停止")
                     except Exception as e:
                         logger.error(f"提交买单报错{symbol} {price} {amount}: {e}")
                         logger.exception(e)
@@ -151,6 +152,8 @@ if __name__ == "__main__":
             logger.exception(e)
             time.sleep(SLEEP_MEDIUM)
             continue
+        except RuntimeError as e:
+            if str(e) == "余额不足，停止": exit()
         except Exception as e:
             logger.error(f"主程序报错: {e}")
             logger.exception(e)

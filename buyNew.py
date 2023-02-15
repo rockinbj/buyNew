@@ -105,11 +105,18 @@ def main():
                                 time.sleep(SLEEP_LONG)
                                 continue
 
+                        except ccxt.OrderNotFound as e:
+                            logger.error(f"暂时未找到订单, 重新查询, 一共会重试 {TRY_TIMES} 次")
+                            if i == TRY_TIMES - 1:
+                                logger.error(f"{symbol} 查询买入结果失败，无法挂卖出单，请手动挂单")
+                                raise
+                            time.sleep(SLEEP_MEDIUM)
+                            continue
                         except Exception as e:
                             logger.error(f"{symbol}获取订单信息失败，重试{e}")
                             logger.exception(e)
                             if i == TRY_TIMES - 1:
-                                logger.error(f"{symbol}获取订单信息多次失败，无法完成后续平仓，请手动平仓。")
+                                logger.error(f"{symbol} 查询买入结果失败，无法挂卖出单，请手动挂单")
                                 raise
                             time.sleep(SLEEP_MEDIUM)
                             continue

@@ -1,6 +1,7 @@
 import logging, logging.handlers
 import os
 import requests
+from buySetting import LOG_FILE, LOG_CONSOLE, LOG_MIXIN
 
 logPath = "log"
 logName = "test.log"
@@ -13,11 +14,11 @@ fmt = '%(asctime)s|%(name)s:%(lineno)4d|%(threadName)s|%(levelname)-8s %(message
 fmt = logging.Formatter(fmt)
 
 hdlConsole = logging.StreamHandler()
-hdlConsole.setLevel(logging.DEBUG)
+hdlConsole.setLevel(getattr(logging, LOG_CONSOLE.upper()))
 hdlConsole.setFormatter(fmt)
 
 hdlFile = logging.handlers.TimedRotatingFileHandler(logFile, when="midnight", backupCount=30)
-hdlFile.setLevel(logging.DEBUG)
+hdlFile.setLevel(getattr(logging, LOG_FILE.upper()))
 hdlFile.setFormatter(fmt)
 
 # 自定义handler用于发送webhook消息
@@ -53,7 +54,7 @@ class MixinHandler(logging.Handler):
 
 
 hdlMixin = MixinHandler()
-hdlMixin.setLevel(logging.DEBUG)
+hdlMixin.setLevel(getattr(logging, LOG_MIXIN.upper()))
 hdlMixin.setFormatter(fmt)
 
 logger.addHandler(hdlConsole)

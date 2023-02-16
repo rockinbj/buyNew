@@ -21,6 +21,10 @@ if IS_TEST:
     symbol = testSymbol
     tradingTime = int(time.time()) + testStartWaitingSeconds
 
+LOG_CONSOLE = "debug"
+LOG_FILE = "debug"
+LOG_MIXIN = "debug"
+
 # 买卖参数说明：
 # buyParas = [
 #     [0.1, 200],

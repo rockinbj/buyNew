@@ -1,13 +1,14 @@
+import logging
 import math
 
 from buySetting import *
 from functions import *
 from logSet import *
 
+logger = logging.getLogger("app.buyNew")
 
 def main():
     logger.info(f"\n\n\n当前交易所：{EXCHANGE} 当前币种：{symbol}")
-    logger.info(f"下单参数:\nBuy Params={buyParas}\nSell Params={sellParas}")
     if EXCHANGE == "mexc":
         logger.warning(f"!!!注意 MEXC 交易所对API只开放 指定交易对，请检查 {symbol} 是否在列!!!")
     elif EXCHANGE == "kucoin":
@@ -30,6 +31,8 @@ def main():
 
     tradingTimeStr = dt.datetime.fromtimestamp(tradingTime).strftime('%Y-%m-%d %H:%M:%S')
     logger.info(f"{symbol}抢新准备就绪，等待开始时间{tradingTimeStr}")
+    logger.info(f"下单参数:\nBuy Params={buyParas}\nSell Params={sellParas}")
+
     while True:
         if time.time() >= tradingTime:
             logger.info("吉时已到！开枪！！！")

@@ -1,5 +1,6 @@
-symbol = "KING/USDT"
-tradingTime = 1676627999
+EXCHANGE = "okx"  # binance, okx, gateio, mexc, kucoin, bigone
+symbol = "IGU/USDT"
+tradingTime = 1676548799
 IS_TEST = True
 
 buyParas = [
@@ -10,6 +11,7 @@ sellParas = [
     [2, 0.7],
     [4, 0.3],
 ]
+
 
 testSymbol = "DOGE/USDT"
 testStartWaitingSeconds = 7

@@ -1,28 +1,7 @@
 import math
-
+from buySetting import *
 from functions import *
 from logSet import *
-
-
-# symbol = "wAXL/USDT"
-# tradingTime = 1676455199
-symbol = "BLUR/USDT"
-tradingTime = int(time.time()) + 7
-
-buyParas = [
-    # [price, amountCoins]
-    # 定义多个买入策略，在哪个价格挂单买入多少个币
-    # [70, 0.7],
-    [0.1, 200],
-]
-
-sellParas = [
-    # [times, amountU]
-    # 定义多个卖出策略，[在成交价多少倍数挂单卖出, 挂单百分比]
-    # [2, 0.5], 以买入价2倍挂卖单，挂买入数量50%的币
-    [1.5, 1],
-    # [3, 0.3],
-]
 
 
 def main():
@@ -34,14 +13,14 @@ def main():
     ex = getattr(ccxt, EXCHANGE)(EXCHANGE_CONFIG)
 
     mkts = ex.loadMarkets()
-    # tks = ex.fetchTicker(symbol)
     mkt = mkts[symbol]
 
     symbolId = mkt["id"]
     precisionAmount = mkt["precision"]["amount"]
     minAmount = mkt["limits"]["amount"]["min"]
     minCost = mkt["limits"]["cost"]["min"]
-    logger.info(f"symbol-{symbol} symbolId-{symbolId} precisionAmount-{precisionAmount} minAmount-{minAmount} minCost-{minCost}")
+    logger.info(f"symbol-{symbol} symbolId-{symbolId} "
+                f"precisionAmount-{precisionAmount} minAmount-{minAmount} minCost-{minCost}")
     logger.debug(f"币种信息：{mkt}")
 
     orderIdsBuy = []
@@ -86,11 +65,11 @@ def main():
 
             # 查询买入结果
             logger.info(f"=========== 开始查询买入结果 ===========")
-            for id in orderIdsBuy:
-                if id:
+            for _id in orderIdsBuy:
+                if _id:
                     for i in range(TRY_TIMES):
                         try:
-                            orderInfo = ex.fetchOrder(id, symbol)
+                            orderInfo = ex.fetchOrder(_id, symbol)
                             logger.debug(f"交易所买单信息: {orderInfo}")
                             if orderInfo["status"] == "closed":
                                 logger.info(f"√√√ {symbol} 买入成功  √√√")

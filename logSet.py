@@ -7,7 +7,7 @@ logPath = "log"
 logName = "test.log"
 logFile = os.path.join(logPath, logName)
 
-logger = logging.getLogger("app.logSet")
+logger = logging.getLogger("app")
 logger.setLevel(logging.DEBUG)
 
 fmt = '%(asctime)s|%(name)s:%(lineno)4d|%(threadName)s|%(levelname)-8s %(message)s'

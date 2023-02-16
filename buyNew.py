@@ -7,6 +7,7 @@ from logSet import *
 
 def main():
     logger.info(f"\n\n\n当前交易所：{EXCHANGE} 当前币种：{symbol}")
+    logger.info(f"下单参数:\nBuy Params={buyParas}\nSell Params={sellParas}")
     if EXCHANGE == "mexc":
         logger.warning(f"!!!注意 MEXC 交易所对API只开放 指定交易对，请检查 {symbol} 是否在列!!!")
     elif EXCHANGE == "kucoin":

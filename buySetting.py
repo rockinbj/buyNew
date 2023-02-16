@@ -1,4 +1,4 @@
-EXCHANGE = "okx"  # binance, okx, gateio, mexc, kucoin, bigone
+EXCHANGE = "okx"  # binance, okx, gateio, mexc, kucoin, bigone, lbank
 symbol = "IGU/USDT"
 tradingTime = 1676548799
 IS_TEST = True

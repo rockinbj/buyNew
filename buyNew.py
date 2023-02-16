@@ -104,6 +104,9 @@ def main():
                                 logger.warning(
                                     f"买入订单状态未成交{symbol} price:{price} amount:{amount} : {orderInfo['status']} 过1s重试"
                                     )
+                                if i == TRY_TIMES - 1:
+                                    logger.error(f"{symbol} 买入订单最终未成交，退出")
+                                    raise RuntimeError(f"买单最终未成交")
                                 time.sleep(SLEEP_LONG)
                                 continue
 
@@ -187,6 +190,7 @@ if __name__ == "__main__":
             continue
         except RuntimeError as e:
             if str(e) == "余额不足，停止": exit()
+            if str(e) == "买单最终未成交": exit()
         except Exception as e:
             logger.error(f"主程序报错: {e}")
             logger.exception(e)

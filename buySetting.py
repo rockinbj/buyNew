@@ -15,10 +15,19 @@ sellParas = [
 
 testSymbol = "DOGE/USDT"
 testStartWaitingSeconds = 7
+testBuyParas = [
+    [0.1, 150],
+]
+testSellParas = [
+    [2, 0.7],
+    [4, 0.3],
+]
 
 if IS_TEST:
     import time
     symbol = testSymbol
+    buyParas = testBuyParas
+    sellParas = testSellParas
     tradingTime = int(time.time()) + testStartWaitingSeconds
 
 LOG_CONSOLE = "debug"

@@ -1,5 +1,7 @@
+import json
 import logging
 import math
+import re
 
 from buySetting import *
 from functions import *
@@ -59,6 +61,11 @@ def main():
                         logger.error(f"余额不足，停止 {e}")
                         # logger.exception(e)
                         raise RuntimeError("余额不足，停止")
+                    except ccxt.InvalidOrder as e:
+                        if "huobi" == EXCHANGE and "order-limitorder-price-max-error" in str(e):
+                            price = float(re.findall("\d+\.\d+", str(e))[0])
+                            logger.warning(f"遇到huobi挂单价格限制, 将价格更新为 {price} 重新下单: {str(e)}")
+                            continue
                     except Exception as e:
                         logger.error(f"提交买单报错{symbol} {price} {amount}: {e}")
                         # logger.exception(e)

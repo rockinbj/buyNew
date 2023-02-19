@@ -64,8 +64,19 @@ def main():
                     except ccxt.InvalidOrder as e:
                         if "huobi" == EXCHANGE and "order-limitorder-price-max-error" in str(e):
                             price = float(re.findall("\d+\.\d+", str(e))[0])
+                            price = ex.priceToPrecision(symbol, price)
                             logger.warning(f"遇到huobi挂单价格限制, 将价格更新为 {price} 重新下单: {str(e)}")
                             continue
+                    except ccxt.ExchangeError as e:
+                        if "bitget" == EXCHANGE and "43009" in str(e):
+                            match = re.search(r"\d+\.\d+%", str(e))
+                            if match:
+                                pct = float(match.group(0)[:-1]) / 100
+                                tk = ex.fetchTicker(symbol)
+                                price = tk["ask"] * (1 + pct) * 0.995
+                                price = ex.priceToPrecision(symbol, price)
+                                logger.warning(f"遇到bitget挂单价格限制, 将价格更新为 {price} 重新下单: {str(e)}")
+                                continue
                     except Exception as e:
                         logger.error(f"提交买单报错{symbol} {price} {amount}: {e}")
                         # logger.exception(e)
@@ -144,9 +155,15 @@ def main():
                                     orderIdsSell.append(order["id"])
                                     break
 
+                            except ccxt.ExchangeError as e:
+                                if "bitget" == EXCHANGE and "43012" in str(e):
+                                    amountThisTime = float(ex.private_spot_get_account_assets({"coin":symbol.split("/")[0]})["data"][0]["available"])
+                                    amountThisTime = ex.amountToPrecision(symbol, amountThisTime)
+                                    logger.warning(f"遇到bitget余额不足, 将数量更新为 {amountThisTime} 重新下单: {str(e)}")
+                                    continue
                             except Exception as e:
                                 logger.error(f"提交卖单报错{symbol} {priceThisTime} {amountThisTime}: {e}")
-                                # logger.exception(e)
+                                logger.exception(e)
                                 if i == TRY_TIMES - 1: raise RuntimeError(f"下卖单失败次数过多，退出。")
                                 time.sleep(0.002)
                                 continue

@@ -1,4 +1,4 @@
-EXCHANGE = "okx"  # binance, okx, gateio, mexc, kucoin, bigone, lbank
+EXCHANGE = "bitget"  # binance, okx, gateio, mexc, kucoin, bigone, lbank, bitget, huobi
 symbol = "IGU/USDT"
 tradingTime = 1676548799
 IS_TEST = True
@@ -30,7 +30,7 @@ if IS_TEST:
     sellParas = testSellParas
     tradingTime = int(time.time()) + testStartWaitingSeconds
 
-LOG_CONSOLE = "debug"
+LOG_CONSOLE = "info"
 LOG_FILE = "debug"
 LOG_MIXIN = "debug"
 
